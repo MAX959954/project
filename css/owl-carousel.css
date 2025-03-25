@@ -42,7 +42,7 @@
 }
 
 .owl-controls {
-  @media (max-width: @screen-sm-max) {
+  @media (max-width: 768px) { /* Replace with an appropriate value */
     top: -120px;
   }
   top: -200px;
@@ -161,13 +161,13 @@
           box-shadow: none;
 }
 
-
 .owl-theme .owl-controls .owl-page{
   cursor: pointer;
   display: inline-block;
   zoom: 1;
-  *display: inline;/*IE7 life-saver */
+  display: inline;/*IE7 life-saver */
 }
+
 .owl-theme .owl-controls .owl-page a{
   display: block;
   width: 12px;

@@ -1,32 +1,15 @@
 
 <?php 
+    require ('parts/functions.php');
     include ('parts/header.php');
+    form_submission();
 ?>
 
 <body>
 
-    <div class="fixed-side-navbar">
-        <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" href="#home"><span>Intro</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#services"><span>Services</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#portfolio"><span>Portfolio</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#our-story"><span>Our Story</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#contact-us"><span>Contact Us</span></a></li>
-        </ul>
-    </div>
-
-    <div class="parallax-content baner-content" id="home">
-        <div class="container">
-            <div class="first-content">
-                <h1>Vanilla</h1>
-                <span><em>Bootstrap</em> v4.2.1 Theme</span>
-                <div class="primary-button">
-                    <a href="#services">Discover More</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
+   <?php 
+    add_navbar();
+   ?>
 
     <div class="service-content" id="services">
         <div class="container">

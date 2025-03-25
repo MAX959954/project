@@ -80,6 +80,23 @@ function add_navbar(){
             </div>
         </div>
     </div> ';
-
 }
+
+
+function form_submission(){
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $name = htmlspecialchars($_POST['name'] ?? '');
+        $email = htmlspecialchars($_POST['email'] ?? '');
+        $message = htmlspecialchars($_POST['message'] ?? '');
+
+        if  (!empty($name) && !empty($email) && !empty($message)){
+            echo "<div class = 'alert alert-success'>Thanks you , $name ! " ;
+        }else {
+            echo "<div class = 'alert alert-danger'>Please fill in all the fields.</div>";
+        }
+    }
+}
+
+
+
 ?>
