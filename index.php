@@ -1,7 +1,7 @@
 
 <?php 
-    require ('parts/functions.php');
-    include ('parts/header.php');
+    require ('php/functions.php');
+    include ('php/header.php');
     form_submission();
 ?>
 
@@ -238,5 +238,5 @@
     </div>
 
   <?php 
-    include ('parts/footer.php');
+    include ('php/footer.php');
   ?>

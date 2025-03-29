@@ -1,5 +1,5 @@
 <?php 
-  require_once 'parts/functions.php';
+  require_once 'php/functions.php';
 ?>
 
 <footer>
