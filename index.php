@@ -1,7 +1,7 @@
 
 <?php 
-    require ('php/functions.php');
-    include ('php/header.php');
+    require ('php/functions.php'); // when the file is not found and stop the script
+    include ('php/header.php'); // when the file is not found , it will continue the script 
     form_submission();
 ?>
 
@@ -194,7 +194,7 @@
                 <div class="col-md-6">
                     <div class="contact-form">
                         <div class="row">
-                            <form id="contact" action="" method="post">
+                            <form id="contact" action="index.php" method="post">
                                 <div class="row">
                                     <div class="col-md-12">
                                       <fieldset>
@@ -202,9 +202,10 @@
                                       </fieldset>
                                     </div>
                                     <div class="col-md-12">
-                                      <fieldset>
-                                        <input name="email" type="email" class="form-control" id="email" placeholder="Your email..." required="">
-                                      </fieldset>
+                                    <fieldset>
+                                        <input name="password" type="password" class="form-control" id="password" placeholder="Your password..." required>
+                                    </fieldset>
+
                                     </div>
                                     <div class="col-md-12">
                                       <fieldset>
@@ -236,6 +237,53 @@
             </div>
         </div>
     </div>
+
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalTitle">Message Sent</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Thank you for your message!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-success" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Login Modal -->
+<div class="modal fade" id="adminLoginModal" tabindex="-1" aria-labelledby="adminLoginLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" method="post" action="php/admin_login.php">
+      <div class="modal-header">
+        <h5 class="modal-title" id="adminLoginLabel">Admin Login</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="adminUsername" class="form-label">Username</label>
+          <input type="text" class="form-control" id="adminUsername" name="username" required>
+        </div>
+        <div class="mb-3">
+          <label for="adminPassword" class="form-label">Password</label>
+          <input type="password" class="form-control" id="adminPassword" name="password" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
 
   <?php 
     include ('php/footer.php');

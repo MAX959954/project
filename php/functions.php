@@ -10,7 +10,8 @@ function add_scrips(){
         echo '<script src="js/vendor/bootstrap.min.js"></script>';
         echo '<script src="js/plugins.js"></script>';
         echo '<script src="js/main.js"></script>';
-        
+        echo '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>';
+
 
         echo '
              <script>
@@ -59,13 +60,15 @@ function add_styles (){
 }
 
 function add_navbar(){
-    echo ' <div class="fixed-side-navbar">
+    echo ' 
+    <div class="fixed-side-navbar">
         <ul class="nav flex-column">
             <li class="nav-item"><a class="nav-link" href="#home"><span>Intro</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#services"><span>Services</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#portfolio"><span>Portfolio</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#our-story"><span>Our Story</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#contact-us"><span>Contact Us</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#adminLoginModal"><span>Admin Login</span></a></li>
         </ul>
     </div>
 
@@ -79,24 +82,51 @@ function add_navbar(){
                 </div>
             </div>
         </div>
-    </div> ';
+    </div>';
 }
+
 
 
 function form_submission(){
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $name = htmlspecialchars($_POST['name'] ?? '');
-        $email = htmlspecialchars($_POST['email'] ?? '');
+        $password = htmlspecialchars($_POST['password'] ?? '');
         $message = htmlspecialchars($_POST['message'] ?? '');
 
-        if  (!empty($name) && !empty($email) && !empty($message)){
+        if  (!empty($name) && !empty($password) && !empty($message)){
+            echo "
+                <script>
+                    window.onload = function() {
+                        $('#successModal').modal('show');
+                    }
+                </script>
+            ";
+        } else {
+            echo "<div class='alert alert-danger'>Please fill in all the fields.</div>";
+        }
+    }
+}
+
+
+
+
+/*
+function form_submission(){
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $name = htmlspecialchars($_POST['name'] ?? '');
+         //  converts special HTML characters to safe codes (like < becomes &lt;) 
+         //to prevent XSS attacks (cross-site scripting)
+        $password = htmlspecialchars($_POST['password'] ?? '');
+        $message = htmlspecialchars($_POST['message'] ?? '');
+
+        if  (!empty($name) && !empty($password) && !empty($message)){
             echo "<div class = 'alert alert-success'>Thanks you , $name ! " ;
         }else {
             echo "<div class = 'alert alert-danger'>Please fill in all the fields.</div>";
         }
     }
 }
-
+*/
 
 
 ?>
