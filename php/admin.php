@@ -1,10 +1,22 @@
 <?php 
     session_start();
 
+    if (!isset($_SESSION['admin_logged_in'])){
+        if (isset($_COOKIE['admin_username']) && $_COOKIE['admin_remember'] === "true"){
+            $_SESSION['admin_logged_in'] = true;
+        }else {
+            header("Location: ../index.php");
+            exit();
+        }
+    }
+
+    /*
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true){
         header("Location: ../index.php");
         exit();
     }
+
+    */
 ?>
 
 <!DOCTYPE html>

@@ -2,17 +2,27 @@
    session_start();
 
    $admin_username = "admin";
-   $amdim_hashed_password = password_hash('admin123' , PASSWORD_DEFAULT);
+   $admin_password = "admin123";
+   $admin_hashed_password = password_hash($admin_password , PASSWORD_DEFAULT);
 
    $username = $_POST['admin_username'] ?? '';
-   $password = $_POST['amdim_hashed_password'] ?? '';
+   $password = $_POST['admin_password'] ?? '';
+   $remember = isset($_POST['remember_me']);
 
-    if ($username == $admin_username && password_verify($password ,$admin_hashed_password)){
+   $stored_hash = $admin_hashed_password;
+
+    if ($username == $admin_username && password_verify($password ,$stored_hash)){
         $_SESSION['admin_logged_in'] = true;
-        header("Location : php/admin.php");
+
+        if ($remember) {
+            setcookie("admin_usename" , $username , time() + (86400 * 30), "/");
+            setcookie("admin_password" , "true" , time() + (86400 * 30) , "/" );
+        }
+
+        header("Location: php/admin.php");
         exit();
     }else {
-        header("Location : ../index.php?login=failed");
+        header("Location: ../index.php?login=failed");
         exit();
     }
 

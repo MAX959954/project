@@ -268,13 +268,19 @@
       <div class="modal-body">
         <div class="mb-3">
           <label for="adminUsername" class="form-label">Username</label>
-          <input type="text" class="form-control" id="adminUsername" name="username" required>
+          <input type="text" class="form-control" id="adminUsername" name="admin_username" required>
         </div>
         <div class="mb-3">
           <label for="adminPassword" class="form-label">Password</label>
-          <input type="password" class="form-control" id="adminPassword" name="password" required>
+          <input type="password" class="form-control" id="adminPassword" name="admin_password" required>
         </div>
       </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+        <label class="form-check-label" for="rememberMe">Remember Me</label>
+      </div>
+                    
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">Login</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -282,6 +288,9 @@
     </form>
   </div>
 </div>
+
+
+
 
 
 
