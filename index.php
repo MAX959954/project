@@ -1,9 +1,73 @@
-
 <?php 
-    require ('php/functions.php'); // when the file is not found and stop the script
-    include ('php/header.php'); // when the file is not found , it will continue the script 
-    form_submission();
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+session_start();
+
+require_once 'php/functions.php';
+require 'php/header.php';
+include 'php/database.php';
+
+if (isset($_POST['sign_up'])){
+    $name = trim($_POST["name"]);
+    $password = $_POST["password"];
+    $email = trim($_POST["email"]);
+
+    $password_hashed = password_hash($password , PASSWORD_DEFAULT);
+
+    $errors  = array();
+
+    if (empty($name) || empty($password) || empty($email)){
+        array_push($errors , "All fields are required");
+    }
+
+    if (!filter_var($email , FILTER_VALIDATE_EMAIL)){
+        array_push($errors , "Email is not valid");
+    }
+
+    if (strlen($password) < 8){
+        array_push($errors , "Password must be at least 8 characters long");
+    }
+
+    $sql = "SELECT * FROM users WHERE email = ?";
+    $stmt = mysqli_prepare($conn , $sql);
+
+    if ($stmt){
+        mysqli_stmt_bind_param($stmt , "s" , $email);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+        $rowCount = mysqli_stmt_num_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($rowCount > 0){
+            array_push($errors , "Email already exists");
+        }
+    } else {
+        array_push($errors , "Database error");
+    }
+
+    if (count($errors) > 0){
+        foreach ($errors as $error){
+            echo "<div class='alert alert-danger'>$error</div>";
+        }
+    } else {
+        $sql = "INSERT INTO users (full_name, password, email) VALUES (?, ?, ?)";
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if ($stmt){
+            mysqli_stmt_bind_param($stmt ,"sss" , $name , $password_hashed , $email);
+            mysqli_stmt_execute($stmt);
+            echo "<div class='alert alert-success'>You are registered successfully.</div>";
+            mysqli_stmt_close($stmt);
+        } else {
+            echo "<div class='alert alert-danger'>Something went wrong. Please try again.</div>";
+        }
+    }
+}
 ?>
+
 
 <body>
 
@@ -187,56 +251,49 @@
         </div>
     </div>
 
+  
 
-    <div class="parallax-content contact-content" id="contact-us">
-        <div class="container">
+<div class="parallax-content contact-content" id="contact-us">
+  <div class="container">
+    <div class="row align-items-start"> <!-- Added align-items-start to align both sides -->
+      <div class="col-md-6">
+        <div class="contact-form">
+          <form id="contact" action="index.php" method="post">
             <div class="row">
-                <div class="col-md-6">
-                    <div class="contact-form">
-                        <div class="row">
-                            <form id="contact" action="index.php" method="post">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                      <fieldset>
-                                        <input name="name" type="text" class="form-control" id="name" placeholder="Your name..." required="">
-                                      </fieldset>
-                                    </div>
-                                    <div class="col-md-12">
-                                    <fieldset>
-                                        <input name="password" type="password" class="form-control" id="password" placeholder="Your password..." required>
-                                    </fieldset>
-
-                                    </div>
-                                    <div class="col-md-12">
-                                      <fieldset>
-                                        <textarea name="message" rows="6" class="form-control" id="message" placeholder="Your message..." required=""></textarea>
-                                      </fieldset>
-                                    </div>
-                                    <div class="col-md-12">
-                                      <fieldset>
-                                        <button type="submit" id="form-submit" class="btn">Send Message</button>
-                                      </fieldset>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="map">
-                    <!-- How to change your own map point
-                           1. Go to Google Maps
-                           2. Click on your location point
-                           3. Click "Share" and choose "Embed map" tab
-                           4. Copy only URL and paste it within the src="" field below
-                    -->
-
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1197183.8373802372!2d-1.9415093691103689!3d6.781986417238027!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdb96f349e85efd%3A0xb8d1e0b88af1f0f5!2sKumasi+Central+Market!5e0!3m2!1sen!2sth!4v1532967884907" width="100%" height="390" frameborder="0" style="border:0" allowfullscreen></iframe>
-                    </div>
-                </div>
+              <div class="col-md-12">
+                <fieldset>
+                  <input name="name" type="text" class="form-control" id="name" placeholder="Your name..." required>
+                </fieldset>
+              </div>
+              <div class="col-md-12">
+                <fieldset>
+                  <input name="password" type="password" class="form-control" id="password" placeholder="Your password..." required>
+                </fieldset>
+              </div>
+              <div class="col-md-12">
+                <fieldset>
+                  <input name="email" type="email" class="form-control" id="email" placeholder="Your email..." required>
+                </fieldset>
+              </div>
+              <div class="col-md-12">
+                <fieldset>
+                  <button type="submit" id="form-submit" class="btn" name = "sign_up">Sign up</button>
+                </fieldset>
+              </div>
             </div>
+          </form>
         </div>
+      </div>
+      <div class="col-md-6">
+        <div class="map">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1197183.8373802372!2d-1.9415093691103689!3d6.781986417238027!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdb96f349e85efd%3A0xb8d1e0b88af1f0f5!2sKumasi+Central+Market!5e0!3m2!1sen!2sth!4v1532967884907"
+            width="100%" height="390" frameborder="0" style="border:0" allowfullscreen></iframe>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+
 
 <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -262,9 +319,10 @@
   <div class="modal-dialog">
     <form class="modal-content" method="post" action="php/admin_login.php">
       <div class="modal-header">
-        <h5 class="modal-title" id="adminLoginLabel">Admin Login</h5>
+        <h5 class="modal-title" id="adminLoginLabel">Log in</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      
       <div class="modal-body">
         <div class="mb-3">
           <label for="adminUsername" class="form-label">Username</label>
@@ -274,23 +332,22 @@
           <label for="adminPassword" class="form-label">Password</label>
           <input type="password" class="form-control" id="adminPassword" name="admin_password" required>
         </div>
+
+        <!-- Moved checkbox inside modal-body -->
+        <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="rememberMeUser" name="remember_me">
+        <label class="form-check-label" for="rememberMeUser">Remember Me</label>
+        </div>
+
       </div>
 
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
-        <label class="form-check-label" for="rememberMe">Remember Me</label>
-      </div>
-                    
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-primary">Log in</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </form>
   </div>
 </div>
-
-
-
 
 
 

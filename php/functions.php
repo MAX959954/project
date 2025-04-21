@@ -85,48 +85,4 @@ function add_navbar(){
     </div>';
 }
 
-
-
-function form_submission(){
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $name = htmlspecialchars($_POST['name'] ?? '');
-        $password = htmlspecialchars($_POST['password'] ?? '');
-        $message = htmlspecialchars($_POST['message'] ?? '');
-
-        if  (!empty($name) && !empty($password) && !empty($message)){
-            echo "
-                <script>
-                    window.onload = function() {
-                        $('#successModal').modal('show');
-                    }
-                </script>
-            ";
-        } else {
-            echo "<div class='alert alert-danger'>Please fill in all the fields.</div>";
-        }
-    }
-}
-
-
-
-
-/*
-function form_submission(){
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $name = htmlspecialchars($_POST['name'] ?? '');
-         //  converts special HTML characters to safe codes (like < becomes &lt;) 
-         //to prevent XSS attacks (cross-site scripting)
-        $password = htmlspecialchars($_POST['password'] ?? '');
-        $message = htmlspecialchars($_POST['message'] ?? '');
-
-        if  (!empty($name) && !empty($password) && !empty($message)){
-            echo "<div class = 'alert alert-success'>Thanks you , $name ! " ;
-        }else {
-            echo "<div class = 'alert alert-danger'>Please fill in all the fields.</div>";
-        }
-    }
-}
-*/
-
-
 ?>
