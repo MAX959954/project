@@ -10,6 +10,8 @@ require_once 'php/functions.php';
 require 'php/header.php';
 include 'php/database.php';
 
+$errors = [];
+
 if (isset($_POST['sign_up'])){
     $name = trim($_POST["name"]);
     $password = $_POST["password"];
@@ -48,23 +50,19 @@ if (isset($_POST['sign_up'])){
         array_push($errors , "Database error");
     }
 
-    if (count($errors) > 0){
-        foreach ($errors as $error){
-            echo "<div class='alert alert-danger'>$error</div>";
-        }
-    } else {
-        $sql = "INSERT INTO users (full_name, password, email) VALUES (?, ?, ?)";
-        $stmt = mysqli_prepare($conn, $sql);
+    if (count($errors) === 0){
+      $sql = "INSERT INTO users (full_name, password, email) VALUES (?, ?, ?)";
+      $stmt = mysqli_prepare($conn, $sql);
 
-        if ($stmt){
-            mysqli_stmt_bind_param($stmt ,"sss" , $name , $password_hashed , $email);
-            mysqli_stmt_execute($stmt);
-            echo "<div class='alert alert-success'>You are registered successfully.</div>";
-            mysqli_stmt_close($stmt);
-        } else {
-            echo "<div class='alert alert-danger'>Something went wrong. Please try again.</div>";
-        }
-    }
+      if ($stmt){
+          mysqli_stmt_bind_param($stmt ,"sss" , $name , $password_hashed , $email);
+          mysqli_stmt_execute($stmt);
+          echo "<div class='alert alert-success'>You are registered successfully.</div>";
+          mysqli_stmt_close($stmt);
+      } else {
+          array_push($errors , "Something went wrong. Please try again.");
+      }
+  }
 }
 ?>
 
@@ -72,6 +70,30 @@ if (isset($_POST['sign_up'])){
 <body>
 
    <?php 
+
+    if (isset($_POST["log_in"])){
+      $email = $_POST["email"];
+      $password = $_POST["password"];
+      require_once "database.php";
+      $sql = "SELECT * FROM users WHERE email = '$email'";
+      $result = mysqli_query($conn , $sql);
+      $user = mysqli_fetch_array($result , MYSQLI_ASSOC);
+
+      if ($user ){
+        if (password_verify($password , $user["password"] )){
+          header("Location: index.php");
+          die ();
+        }else {
+          echo "<div class = 'alert alert danger'>Passsword does not match </div>";
+        }
+      }else {
+        echo "<div class = 'alert alert danger'> Email does not match </div>";
+      }
+
+
+        
+    }
+
     add_navbar();
    ?>
 
@@ -325,12 +347,13 @@ if (isset($_POST['sign_up'])){
       
       <div class="modal-body">
         <div class="mb-3">
-          <label for="adminUsername" class="form-label">Username</label>
-          <input type="text" class="form-control" id="adminUsername" name="admin_username" required>
+          <label for="adminUsername" class="form-label">Email</label>
+          <input type="text" class="form-control" id="adminUsername" name="email" required>
         </div>
+        
         <div class="mb-3">
           <label for="adminPassword" class="form-label">Password</label>
-          <input type="password" class="form-control" id="adminPassword" name="admin_password" required>
+          <input type="password" class="form-control" id="adminPassword" name="password" required>
         </div>
 
         <!-- Moved checkbox inside modal-body -->
@@ -349,6 +372,34 @@ if (isset($_POST['sign_up'])){
   </div>
 </div>
 
+<?php if (count($errors) > 0): ?>
+    <div id="errorModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Error</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <?php foreach ($errors as $error): ?>
+              <div class="alert alert-danger mb-1 p-2"><?= $error ?></div>
+            <?php endforeach; ?>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        $('#errorModal').modal('show');
+      });
+    </script>
+<?php endif; ?>
 
 
   <?php 

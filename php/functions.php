@@ -68,7 +68,7 @@ function add_navbar(){
             <li class="nav-item"><a class="nav-link" href="#portfolio"><span>Portfolio</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#our-story"><span>Our Story</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#contact-us"><span>Contact Us</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#adminLoginModal"><span>Admin Login</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#adminLoginModal" name = "log_in"><span>Log in</span></a></li>
         </ul>
     </div>
 
