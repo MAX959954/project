@@ -11,8 +11,9 @@ function add_scrips(){
         echo '<script src="js/plugins.js"></script>';
         echo '<script src="js/main.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>';
-
-
+        echo '<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>';
+        echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+        
         echo '
              <script>
             function openCity(cityName) {
@@ -41,6 +42,7 @@ function add_scrips(){
                 });
             });
         </script>';
+
     }
 }
 
@@ -69,6 +71,12 @@ function add_navbar(){
             <li class="nav-item"><a class="nav-link" href="#our-story"><span>Our Story</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#contact-us"><span>Contact Us</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#adminLoginModal" name = "log_in"><span>Log in</span></a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="/project/php/crud.php" name="crud_menu">
+                    <span>Crud_menu</span>
+                </a>
+            </li>
+
         </ul>
     </div>
 

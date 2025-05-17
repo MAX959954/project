@@ -755,3 +755,8 @@ body.lb-disable-scrolling {
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
   opacity: 1;
 }
+
+/* Add this to your CSS file */
+.modal-open footer {
+    display: none !important;
+}

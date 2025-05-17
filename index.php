@@ -1,102 +1,129 @@
 <?php 
-
+session_start(); 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
-
 require_once 'php/functions.php';
-require 'php/header.php';
-include 'php/database.php';
+require_once 'php/header.php';
+require_once 'php/crud-operation.php';
+
+class UserRegistration {
+  private $conn;
+  private $errors = [];
+
+  public function __construct($dbConnection) {
+    $this->conn = $dbConnection;
+  }
+
+  public function registerUser($name, $password, $email) {
+    $this->validateInput($name, $password, $email);
+
+    if (empty($this->errors)) {
+      if ($this->isEmailExists($email)) {
+        $this->errors[] = "Email already exists";
+      } else {
+        $this->saveUser($name, $password, $email);
+      }
+    }
+
+    return $this->errors;
+  }
+
+  private function validateInput($name, $password, $email) {
+    if (empty($name) || empty($password) || empty($email)) {
+      $this->errors[] = "All fields are required";
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      $this->errors[] = "Email is not valid";
+    }
+
+    if (strlen($password) < 8) {
+      $this->errors[] = "Password must be at least 8 characters long";
+    }
+  }
+
+  private function isEmailExists($email) {
+    $sql = "SELECT * FROM users WHERE email = ?";
+    $stmt = mysqli_prepare($this->conn, $sql);
+
+    if ($stmt) {
+      mysqli_stmt_bind_param($stmt, "s", $email);
+      mysqli_stmt_execute($stmt);
+      mysqli_stmt_store_result($stmt);
+      $rowCount = mysqli_stmt_num_rows($stmt);
+      mysqli_stmt_close($stmt);
+
+      return $rowCount > 0;
+    } else {
+      $this->errors[] = "Database error";
+      return false;
+    }
+  }
+
+  private function saveUser($name, $password, $email) {
+    $password_hashed = password_hash($password, PASSWORD_DEFAULT);
+    $sql = "INSERT INTO users (full_name, password, email) VALUES (?, ?, ?)";
+    $stmt = mysqli_prepare($this->conn, $sql);
+
+    if ($stmt) {
+      mysqli_stmt_bind_param($stmt, "sss", $name, $password_hashed, $email);
+      mysqli_stmt_execute($stmt);
+      $_SESSION['registration_success'] = true;
+      mysqli_stmt_close($stmt);
+    } else {
+      $this->errors[] = "Something went wrong. Please try again.";
+    }
+  }
+}
+
+if (!isset($conn) || !$conn) {
+    die("Database connection error. Please check your configuration.");
+}
+
+$userRegistration = new UserRegistration($conn);
 
 $errors = [];
 
-if (isset($_POST['sign_up'])){
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sign_up'])) {
     $name = trim($_POST["name"]);
-    $password = $_POST["password"];
+    $password = trim($_POST["password"]);
     $email = trim($_POST["email"]);
+    $errors = $userRegistration->registerUser($name, $password, $email);
 
-    $password_hashed = password_hash($password , PASSWORD_DEFAULT);
-
-    $errors  = array();
-
-    if (empty($name) || empty($password) || empty($email)){
-        array_push($errors , "All fields are required");
+    if (empty($errors)) {
+        $_SESSION['registration_success'] = true;
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
     }
-
-    if (!filter_var($email , FILTER_VALIDATE_EMAIL)){
-        array_push($errors , "Email is not valid");
-    }
-
-    if (strlen($password) < 8){
-        array_push($errors , "Password must be at least 8 characters long");
-    }
-
-    $sql = "SELECT * FROM users WHERE email = ?";
-    $stmt = mysqli_prepare($conn , $sql);
-
-    if ($stmt){
-        mysqli_stmt_bind_param($stmt , "s" , $email);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_store_result($stmt);
-        $rowCount = mysqli_stmt_num_rows($stmt);
-        mysqli_stmt_close($stmt);
-
-        if ($rowCount > 0){
-            array_push($errors , "Email already exists");
-        }
-    } else {
-        array_push($errors , "Database error");
-    }
-
-    if (count($errors) === 0){
-      $sql = "INSERT INTO users (full_name, password, email) VALUES (?, ?, ?)";
-      $stmt = mysqli_prepare($conn, $sql);
-
-      if ($stmt){
-          mysqli_stmt_bind_param($stmt ,"sss" , $name , $password_hashed , $email);
-          mysqli_stmt_execute($stmt);
-          echo "<div class='alert alert-success'>You are registered successfully.</div>";
-          mysqli_stmt_close($stmt);
-      } else {
-          array_push($errors , "Something went wrong. Please try again.");
-      }
-  }
 }
+
+if (isset($_SESSION['errors'])) {
+    $errors = array_merge($errors, $_SESSION['errors']);
+    unset($_SESSION['errors']);
+}
+
+$showRegistrationSuccess = false;
+if (isset($_SESSION['registration_success']) && $_SESSION['registration_success']) {
+    $showRegistrationSuccess = true;
+    unset($_SESSION['registration_success']);
+}
+
+if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var loginSuccessModal = new bootstrap.Modal(document.getElementById('loginSuccessModal'));
+            loginSuccessModal.show();
+        });
+    </script>";
+    unset($_SESSION['login_success']);
+}
+
+add_navbar();
 ?>
 
-
 <body>
-
-   <?php 
-
-    if (isset($_POST["log_in"])){
-      $email = $_POST["email"];
-      $password = $_POST["password"];
-      require_once "database.php";
-      $sql = "SELECT * FROM users WHERE email = '$email'";
-      $result = mysqli_query($conn , $sql);
-      $user = mysqli_fetch_array($result , MYSQLI_ASSOC);
-
-      if ($user ){
-        if (password_verify($password , $user["password"] )){
-          header("Location: index.php");
-          die ();
-        }else {
-          echo "<div class = 'alert alert danger'>Passsword does not match </div>";
-        }
-      }else {
-        echo "<div class = 'alert alert danger'> Email does not match </div>";
-      }
-
-
-        
-    }
-
-    add_navbar();
-   ?>
-
     <div class="service-content" id="services">
         <div class="container">
             <div class="row">
@@ -339,40 +366,38 @@ if (isset($_POST['sign_up'])){
 <!-- Admin Login Modal -->
 <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-labelledby="adminLoginLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form class="modal-content" method="post" action="php/admin_login.php">
-      <div class="modal-header">
-        <h5 class="modal-title" id="adminLoginLabel">Log in</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="adminUsername" class="form-label">Email</label>
-          <input type="text" class="form-control" id="adminUsername" name="email" required>
+    <div class="modal-content">
+      <form method="post" action="php/admin_login.php">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminLoginLabel">Log in</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        
-        <div class="mb-3">
-          <label for="adminPassword" class="form-label">Password</label>
-          <input type="password" class="form-control" id="adminPassword" name="password" required>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="adminUsername" class="form-label">Email</label>
+            <input type="text" class="form-control" id="adminUsername" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="adminPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="adminPassword" name="password" required>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="rememberMeUser" name="remember_me">
+            <label class="form-check-label" for="rememberMeUser">Remember Me</label>
+          </div>
         </div>
-
-        <!-- Moved checkbox inside modal-body -->
-        <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="rememberMeUser" name="remember_me">
-        <label class="form-check-label" for="rememberMeUser">Remember Me</label>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" name="log_in">Log in</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
-
-      </div>
-
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Log in</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
 
-<?php if (count($errors) > 0): ?>
+<?php ?>
+
+<?php if (isset($errors) && count($errors) > 0): ?>
     <div id="errorModal" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -384,7 +409,7 @@ if (isset($_POST['sign_up'])){
           </div>
           <div class="modal-body">
             <?php foreach ($errors as $error): ?>
-              <div class="alert alert-danger mb-1 p-2"><?= $error ?></div>
+              <div class="alert alert-danger mb-1 p-2"><?= htmlspecialchars($error) ?></div>
             <?php endforeach; ?>
           </div>
           <div class="modal-footer">
@@ -401,7 +426,79 @@ if (isset($_POST['sign_up'])){
     </script>
 <?php endif; ?>
 
+ <div class="modal fade" id="registrationSuccessModal" tabindex="-1" aria-labelledby="registrationSuccessModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title" id="registrationSuccessModalLabel">Registration Successful</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            You are registered successfully.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <?php 
-    include ('php/footer.php');
-  ?>
+    <?php if ($showRegistrationSuccess): ?>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var registrationSuccessModal = new bootstrap.Modal(document.getElementById('registrationSuccessModal'));
+        registrationSuccessModal.show();
+      });
+    </script>
+    <?php endif; ?>
+
+<!-- Login Success Modal -->
+<div class="modal fade" id="loginSuccessModal" tabindex="-1" aria-labelledby="loginSuccessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="loginSuccessModalLabel">Login Successful</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <?= isset($_SESSION['login_message']) ? htmlspecialchars($_SESSION['login_message']) : 'Welcome back! You\'ve logged in successfully.' ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Add this script to hide footer when modal shows
+document.addEventListener('DOMContentLoaded', function() {
+    var loginModal = document.getElementById('loginSuccessModal');
+    if (loginModal) {
+        var modal = new bootstrap.Modal(loginModal);
+        
+        // Hide footer when modal shows
+        loginModal.addEventListener('show.bs.modal', function() {
+            document.querySelector('footer').style.display = 'none';
+        });
+        
+        // Show footer when modal hides
+        loginModal.addEventListener('hidden.bs.modal', function() {
+            document.querySelector('footer').style.display = 'block';
+        });
+        
+        <?php if (isset($_SESSION['login_success']) && $_SESSION['login_success']): ?>
+        modal.show();
+        <?php unset($_SESSION['login_success']); ?>
+        <?php endif; ?>
+    }
+});
+</script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+
+
+<?php 
+  include ('php/footer.php');
+?>
