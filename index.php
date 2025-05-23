@@ -129,15 +129,14 @@ add_navbar();
             <div class="row">
                 <div class="col-md-4">
                     <div class="left-text">
-                        <h4>More About Vanilla</h4>
+                        <h4>More About RoamEasy</h4>
                         <div class="line-dec"></div>
-                        <p>Vanilla is free HTML CSS template with Bootstrap v4.2.1 and you can apply this theme for your sites. 
-                        Please share our <a rel="nofollow" href="https://templatemo.com">website</a> to your friends or collegues. Thank you.</p>
+                        <p>RoamEasy is your trusted partner in unforgettable travel experiences. Whether you're dreaming of serene beaches, bustling cities, or hidden natural wonders, we make it easy for you to explore the world. Our team of travel experts works around the clock to design personalized trips that fit your budget, interests, and schedule. <a rel="nofollow" href="https://templatemo.com">website</a> to your friends or collegues. Thank you.</p>
                         <ul>
-                            <li>-  Praesent porta urna id eros</li>
-                            <li>-  Curabitur consectetur malesuada</li>
-                            <li>-  Nam pretium imperdiet enim</li>
-                            <li>-  Sed viverra arcu non nisi efficitur</li>
+                            <li>-  Tailored travel packages for every traveler</li>
+                            <li>-  Local insights to enhance your adventures</li>
+                            <li>-  Transparent pricing with no hidden costs</li>
+                            <li>-  24/7 assistance before and during your journey</li>
                         </ul>
                         <div class="primary-button">
                             <a href="#portfolio">Learn More About Us</a>
@@ -150,28 +149,28 @@ add_navbar();
                             <div class="service-item">
                                 <h4>Classic Modern Design</h4>
                                 <div class="line-dec"></div>
-                                <p>Sed lacinia ligula est, at venenatis ex iaculis quis. Morbi sollicitudin nulla eget odio pellentesque.</p>
+                                <p>We blend timeless travel traditions with modern booking tools, giving you the perfect balance of ease, style, and comfort every step of your journey.</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="service-item">
                                 <h4>Unique &amp; Creative Ideas</h4>
                                 <div class="line-dec"></div>
-                                <p>Sed lacinia ligula est, at venenatis ex iaculis quis. Morbi sollicitudin nulla eget odio pellentesque.</p>
+                                <p>Every journey we plan is one-of-a-kind. From off-the-beaten-path gems to themed tours, our creative approach ensures your trip is truly unforgettable</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="service-item">
                                 <h4>Effective Team Work</h4>
                                 <div class="line-dec"></div>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia ligula est, at venenatis ex iaculis quis.</p>
+                                <p>Our passionate travel planners, local partners, and customer care experts collaborate seamlessly to bring your dream trip to life — hassle-free and joyful.</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="service-item">
                                 <h4>Fast Support 24/7</h4>
                                 <div class="line-dec"></div>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia ligula est, at venenatis ex iaculis quis.</p>
+                                <p>No matter where you are in the world, our friendly support team is always a message or call away. We’ve got your back, every hour of every day.</p>
                             </div>
                         </div>
                     </div>
@@ -188,73 +187,105 @@ add_navbar();
                     <div id="owl-testimonials" class="owl-carousel owl-theme">
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/1st-big-item.jpg" data-lightbox="image-1"><img src="img/1st-item.jpg" alt=""></a>
+                                <a href="img/niklas-weiss--2WlTWZLnRc-unsplash.jpg" data-lightbox="image-1"><img src="img/niklas-weiss--2WlTWZLnRc-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>Awesome Note Book</h4>
-                                    <span>$18.00</span>
+                                    <h4>Bali is unmatched</h4>
+                                    <span>$820.00</span><br>
+                                     <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+                                    </div>
+                                </div>
+                               
+                              </div>
+                        </div>
+                        <div class="item">
+                            <div class="testimonials-item">
+                                <a href="img/ali-maah-zyOeEm4NsPM-unsplash.jpg" data-lightbox="image-1"><img src="img/ali-maah-zyOeEm4NsPM-unsplash.jpg" alt=""></a>
+                                <div class="text-content">
+                                    <h4>Maldives</h4>
+                                    <span>$1000.00</span>
+                                       <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/2nd-big-item.jpg" data-lightbox="image-1"><img src="img/2nd-item.jpg" alt=""></a>
+                                <a href="img/kristina-tolmacheva-TfTxZtVnMc0-unsplash.jpg" data-lightbox="image-1"><img src="img/kristina-tolmacheva-TfTxZtVnMc0-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>Antique Decoration Photo</h4>
-                                    <span>$27.00</span>
+                                    <h4>New Zealand</h4>
+                                    <span>$1200.00</span>
+                                      <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/3rd-big-item.jpg" data-lightbox="image-1"><img src="img/3rd-item.jpg" alt=""></a>
+                                <a href="img/carlos-torres-lH5RmE-TEHc-unsplash.jpg" data-lightbox="image-1"><img src="img/carlos-torres-lH5RmE-TEHc-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>Work Hand Bag</h4>
-                                    <span>$36.00</span>
+                                    <h4>Italy</h4>
+                                    <span>$650.00</span>
+                                      <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/4th-big-item.jpg" data-lightbox="image-1"><img src="img/4th-item.jpg" alt=""></a>
+                                <a href="img/mike-swigunski-6SgLJg7kM7E-unsplash.jpg" data-lightbox="image-1"><img src="img/mike-swigunski-6SgLJg7kM7E-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>Smart Watch</h4>
-                                    <span>$45.00</span>
+                                    <h4>Alpes</h4>
+                                    <span>$720.00</span>
+                                       <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/5th-big-item.jpg" data-lightbox="image-1"><img src="img/5th-item.jpg" alt=""></a>
+                                <a href="img/anastasia-petrova-xu2WYJek5AI-unsplash.jpg" data-lightbox="image-1"><img src="img/anastasia-petrova-xu2WYJek5AI-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>PC Tablet Draw</h4>
-                                    <span>$63.00</span>
+                                    <h4>Carpathians</h4>
+                                    <span>$850</span>
+                                       <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/6th-big-item.jpg" data-lightbox="image-1"><img src="img/6th-item.jpg" alt=""></a>
+                                <a href="img/guilherme-stecanella-SaVlzqe9068-unsplash.jpg" data-lightbox="image-1"><img src="img/guilherme-stecanella-SaVlzqe9068-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>Healthy Milkshake</h4>
-                                    <span>$77.00</span>
+                                    <h4>New York</h4>
+                                    <span>$1300.50</span>
+                                       <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="item">
                             <div class="testimonials-item">
-                                <a href="img/2nd-big-item.jpg" data-lightbox="image-1"><img src="img/2nd-item.jpg" alt=""></a>
+                                <a href="img/aayush-gupta-ljhCEaHYWJ8-unsplash.jpg" data-lightbox="image-1"><img src="img/aayush-gupta-ljhCEaHYWJ8-unsplash.jpg" alt=""></a>
                                 <div class="text-content">
-                                    <h4>Antique Decoration Photo</h4>
-                                    <span>$84.50</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="testimonials-item">
-                                <a href="img/1st-big-item.jpg" data-lightbox="image-1"><img src="img/1st-item.jpg" alt=""></a>
-                                <div class="text-content">
-                                    <h4>Awesome Notes Book</h4>
-                                    <span>$96.75</span>
+                                    <h4>Poland</h4>
+                                    <span>$750.75</span>
+                                      <div class="d-flex justify-content-center">
+                                      <button class="btn btn-primary mt-2 book-btn" data-bs-toggle="modal" data-bs-target="#bookingModal" data-title="Bali is unmatched">Book this trip</button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -264,6 +295,33 @@ add_navbar();
         </div>
     </div>
 
+    <?php
+
+    if (isset($_SESSION['booking_success']) && $_SESSION['booking_success']) {
+        echo "<script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var bookingSuccessModal = new bootstrap.Modal(document.getElementById('bookingSuccessModal'));
+                bookingSuccessModal.show();
+            });
+        </script>";
+        unset($_SESSION['booking_success']);
+    }
+
+    if (isset($_SESSION['booking_error'])) {
+        echo "<script>
+            document.addEventListener('DOMContentLoaded', function () {
+                alert('" . addslashes($_SESSION['booking_error']) . "');
+            });
+        </script>";
+        unset($_SESSION['booking_error']);
+    }
+    
+    add_book_window() ;
+    
+    add_booking_successful_modal();
+
+    $_SESSION['booking_success'] = true;
+    ?>
 
     <div class="tabs-content" id="our-story">
         <div class="container">
@@ -493,10 +551,11 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php endif; ?>
     }
 });
+
 </script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 
 <?php 
