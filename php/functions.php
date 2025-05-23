@@ -129,11 +129,11 @@ function add_book_window(){
                         </div>
                         <div class="mb-3">
                             <label for="startDate" class="form-label">Start Date</label>
-                            <input type="date" class="form-control" id="startDate" name="start_date" required>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
                         </div>
                         <div class="mb-3">
                             <label for="endDate" class="form-label">Return Date</label>
-                            <input type="date" class="form-control" id="endDate" name="end_date" required>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
                         </div>
                     </div>
                     <div class="modal-footer">

@@ -1,4 +1,5 @@
-<?php 
+<?php
+session_start();
 
 class Database_vacation {
     private mysqli $conn;
@@ -6,7 +7,7 @@ class Database_vacation {
     public function __construct(string $host, string $user, string $password, string $dbname) {
         $this->conn = new mysqli($host, $user, $password, $dbname);
 
-        if ($this->conn->connect_error) {  // FIX: $this->conn not $this-conn
+        if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);
         }
     }
@@ -39,25 +40,21 @@ class BookTrip {
         $conn = $db->getConnection();
         $stmt = $conn->prepare("INSERT INTO vacation (title, start_date, end_date) VALUES (?, ?, ?)");
         if (!$stmt) {
-            return false;
+            die("Prepare failed: " . $conn->error);
         }
-
         $stmt->bind_param("sss", $this->title, $this->start_date, $this->end_date);
-        return $stmt->execute();
-    }
-
-    public function displayConfirmation(): void {
-        echo "<script>
-            alert('Thank you for booking!\\nTrip: {$this->title}\\nStart Date: {$this->start_date}\\nReturn Date: {$this->end_date}');
-        </script>";
+        if (!$stmt->execute()) {
+            die("Execute failed: " . $stmt->error);
+        }
+        return true;
     }
 }
 
 class BookingHandler {
     private Database_vacation $db;
 
-    public function __construct() {  // FIX: __construct was misspelled
-        $this->db = new Database_vacation('localhost', 'root', '', 'vacation');
+    public function __construct() {
+        $this->db = new Database_vacation('localhost', 'root', 'root', 'login_register');
     }
 
     public function handleBooking(array $postData): void {
@@ -66,21 +63,16 @@ class BookingHandler {
         if ($booking->isValid()) {
             if ($booking->save($this->db)) {
                 $_SESSION['booking_success'] = true;
-                $this->db->close();
-                header("Location: /project/index.php");
-                exit();
             } else {
                 $_SESSION['booking_error'] = "Error saving booking. Please try again.";
-                $this->db->close();
-                header("Location: /project/index.php");
-                exit();
             }
         } else {
             $_SESSION['booking_error'] = "Please fill in all fields.";
-            $this->db->close();
-            header("Location: /project/index.php");
-            exit();
         }
+
+        $this->db->close();
+        header("Location: /project/index.php");
+        exit();
     }
 }
 
