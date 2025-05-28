@@ -56,24 +56,26 @@
     container.appendChild(card);
 
     // 🔥 Attach delete handler
-    card.querySelector('.delete-btn').addEventListener('click', async () => {
-      const confirmDelete = confirm("Are you sure you want to delete this client?");
-      if (!confirmDelete) return;
+   card.querySelector('.delete-btn').addEventListener('click', async () => {
+    const confirmDelete = confirm("Are you sure you want to delete this client?");
+    if (!confirmDelete) return;
 
-      const res = await fetch('crud.php', {
+    const res = await fetch('crud.php', {
         method: 'POST',
         body: new URLSearchParams({
-          action: 'delete_client',
-          id: id
+            action: 'delete_client',
+            id: id // Ensure this matches the card's data-id
         })
-      });
-
-      const text = await res.text();
-      alert(text);
-      if (text.includes("✅")) {
-        card.remove();
-      }
     });
+
+    const text = await res.text();
+    alert(text);
+    if (text.includes("✅")) { // Only remove if PHP confirms success
+        card.remove();
+    } else {
+        console.error("Deletion failed:", text);
+    }
+});
   }
 
     function addVacationCard(title, start, end, id) {
@@ -241,15 +243,12 @@ class CRUD {
     }
 
     // Delete Client
-    public function deleteClient($id) {
-        error_log("Deleting client with ID: $id"); // log to PHP error log
-        $sql = "DELETE FROM users WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt && $stmt->bind_param("i", $id)) {
-            return $stmt->execute();
-        }
-        return false;
-    }
+   public function deleteClient($id) {
+    if ($id <= 0) return false; // Reject invalid IDs
+    $sql = "DELETE FROM users WHERE id = ?";
+    $stmt = $this->conn->prepare($sql);
+    return $stmt && $stmt->bind_param("i", $id) && $stmt->execute();
+  }
 
     // Delete Vacation
     public function deleteVacation($id) {
@@ -267,7 +266,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $database = new Database();
     $db = $database->getConnection();
     $crud = new CRUD($db);
-
+    // Ensure ID is valid for delete actions
+    if (
+      (($_POST['action'] ?? '') === 'delete_client' || ($_POST['action'] ?? '') === 'delete_vacation')
+      && (!isset($_POST['id']) || !is_numeric($_POST['id']) || (int)$_POST['id'] <= 0)
+    ) {
+      echo "❌ Invalid ID.";
+      exit;
+    }
     $action = $_POST['action'] ?? '';
     $response = '';
 
@@ -277,28 +283,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            $id = $crud->addClient($full_name, $email, $password);
-            $response = $id ? "✅ Client added successfully.||$id" : "❌ Failed to add client.";
-            break;
-
+        $id = $crud->addClient($full_name, $email, $password);
+        $response = $id ? "✅ Client added successfully. ID:$id" : "❌ Failed to add client.";
+        break;
+        
         case 'add_vacation':
             $title = $_POST['title'] ?? '';
             $start = $_POST['start_date'] ?? '';
             $end = $_POST['end_date'] ?? '';
-
+        
             $id = $crud->addVacation($title, $start, $end);
-            $response = $id ? "✅ Vacation added successfully.||$id" : "❌ Failed to add vacation.";
+            $response = $id ? "✅ Vacation added successfully. ID:$id" : "❌ Failed to add vacation.";
             break;
 
-        case 'delete_client':
-           case 'delete_client':
-            $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
-            if ($id && $crud->deleteClient($id)) {
-                echo "✅ Client deleted.||$id";
-            } else {
-                echo "❌ Failed to delete client. ID: $id";
-            }
-            break;
+      case 'delete_client':
+          $id = (int)($_POST['id'] ?? 0);
+          if ($crud->deleteClient($id)) {
+              error_log("Deleted client ID: $id"); // Log success
+              echo "✅ Client deleted.||$id";
+          } else {
+              error_log("Failed to delete client ID: $id. Error: " . $db->error); // Log failure
+              echo "❌ Failed to delete client. ID: $id";
+          }
+          break;
 
         case 'delete_vacation':
             $id = (int)($_POST['id'] ?? 0);
