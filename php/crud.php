@@ -14,27 +14,74 @@
       document.getElementById('newVacationForm').classList.toggle('hidden');
     }
 
-    function addClientCard(name, email) {
-      const container = document.getElementById('cardContainer');
-      const card = document.createElement('div');
-      card.className = "bg-white p-5 rounded-xl shadow-md space-y-3";
+    function attachDeleteHandler(card) {
+      const deleteBtn = card.querySelector('.delete-btn');
+      const id = card.getAttribute('data-id');
+      const type = card.getAttribute('data-type');
 
-      card.innerHTML = `
-        <h2 class="text-xl font-semibold text-gray-700">${name}</h2>
-        <p class="text-sm text-gray-500">📧 ${email}</p>
-        <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
-        <div class="flex space-x-2 pt-3">
-          <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
-          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">🗑️ Delete</button>
-        </div>
-      `;
-      container.appendChild(card);
+      deleteBtn.addEventListener('click', async () => {
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('action', type === 'client' ? 'delete_client' : 'delete_vacation');
+
+        const response = await fetch('crud.php', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.text();
+        alert(result.replace(/<[^>]*>?/gm, ''));
+
+        if (result.includes("✅")) {
+          card.remove();
+        }
+      });
     }
 
-    function addVacationCard(title, start, end) {
+   function addClientCard(name, email, id) {
+    const container = document.getElementById('cardContainer');
+    const card = document.createElement('div');
+    card.className = "bg-white p-5 rounded-xl shadow-md space-y-3";
+    card.dataset.id = id; // 🔑 Store the ID
+
+    card.innerHTML = `
+      <h2 class="text-xl font-semibold text-gray-700">${name}</h2>
+      <p class="text-sm text-gray-500">📧 ${email}</p>
+      <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
+      <div class="flex space-x-2 pt-3">
+        <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
+        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition delete-btn">🗑️ Delete</button>
+      </div>
+    `;
+    container.appendChild(card);
+
+    // 🔥 Attach delete handler
+    card.querySelector('.delete-btn').addEventListener('click', async () => {
+      const confirmDelete = confirm("Are you sure you want to delete this client?");
+      if (!confirmDelete) return;
+
+      const res = await fetch('crud.php', {
+        method: 'POST',
+        body: new URLSearchParams({
+          action: 'delete_client',
+          id: id
+        })
+      });
+
+      const text = await res.text();
+      alert(text);
+      if (text.includes("✅")) {
+        card.remove();
+      }
+    });
+  }
+
+    function addVacationCard(title, start, end, id) {
       const container = document.getElementById('cardContainer');
       const card = document.createElement('div');
       card.className = "bg-white p-5 rounded-xl shadow-md space-y-3";
+      card.setAttribute('data-id', id);
+      card.setAttribute('data-type', 'vacation');
 
       card.innerHTML = `
         <h2 class="text-xl font-semibold text-gray-700">${title}</h2>
@@ -42,10 +89,11 @@
         <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
         <div class="flex space-x-2 pt-3">
           <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
-          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">🗑️ Delete</button>
+          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition delete-btn">🗑️ Delete</button>
         </div>
       `;
       container.appendChild(card);
+      attachDeleteHandler(card);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -64,10 +112,13 @@
           alert(result.replace(/<[^>]*>?/gm, ''));
 
           if (result.includes("✅")) {
+            const idMatch = result.match(/ID:(\d+)/);
+            const newId = idMatch ? idMatch[1] : null;
+
             if (action === 'add_client') {
               const name = form.querySelector('input[name="full_name"]').value;
               const email = form.querySelector('input[name="email"]').value;
-              addClientCard(name, email);
+              addClientCard(name, email, newId);
               toggleForm();
               form.reset();
             }
@@ -76,7 +127,7 @@
               const title = form.querySelector('input[name="title"]').value;
               const start = form.querySelector('input[name="start_date"]').value;
               const end = form.querySelector('input[name="end_date"]').value;
-              addVacationCard(title, start, end);
+              addVacationCard(title, start, end, newId);
               vacationForm();
               form.reset();
             }
@@ -88,7 +139,6 @@
 </head>
 <body class="bg-gray-100 p-6">
   <div class="max-w-6xl mx-auto">
-    <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Client List</h1>
       <div class="flex space-x-4">
@@ -97,7 +147,6 @@
       </div>
     </div>
 
-    <!-- Cards Container -->
     <div id="cardContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></div>
 
     <!-- New Client Form -->
@@ -160,8 +209,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'crud-operation.php';
-require_once 'functions.php';
+require_once 'crud-operation.php'; // Include your database connection
+require_once 'functions.php';// Assume this contains a `Database` class with getConnection()
 
 class CRUD {
     private $conn;
@@ -170,53 +219,100 @@ class CRUD {
         $this->conn = $db;
     }
 
-   public function addClient($full_name, $email, $password) {
-      $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-      $sql = "INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)";
-      $stmt = $this->conn->prepare($sql);
-      return $stmt->execute([$full_name, $email, $hashedPassword]);
-  }
+    // Add Client
+    public function addClient($full_name, $email, $password) {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $sql = "INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        if ($stmt && $stmt->bind_param("sss", $full_name, $email, $hashedPassword) && $stmt->execute()) {
+            return $this->conn->insert_id;
+        }
+        return false;
+    }
 
+    // Add Vacation
     public function addVacation($title, $start_date, $end_date) {
         $sql = "INSERT INTO vacation (title, start_date, end_date) VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([$title, $start_date, $end_date]);
+        if ($stmt && $stmt->bind_param("sss", $title, $start_date, $end_date) && $stmt->execute()) {
+            return $this->conn->insert_id;
+        }
+        return false;
+    }
+
+    // Delete Client
+    public function deleteClient($id) {
+        error_log("Deleting client with ID: $id"); // log to PHP error log
+        $sql = "DELETE FROM users WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        if ($stmt && $stmt->bind_param("i", $id)) {
+            return $stmt->execute();
+        }
+        return false;
+    }
+
+    // Delete Vacation
+    public function deleteVacation($id) {
+        $sql = "DELETE FROM vacation WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        if ($stmt && $stmt->bind_param("i", $id)) {
+            return $stmt->execute();
+        }
+        return false;
     }
 }
 
+// Handle request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-   $database = new Database();
-   $db = $database->getConnection(); // ✅ use getConnection() instead of connect()
-   $crud = new CRUD($db);
+    $database = new Database();
+    $db = $database->getConnection();
+    $crud = new CRUD($db);
 
     $action = $_POST['action'] ?? '';
+    $response = '';
 
     switch ($action) {
         case 'add_client':
             $full_name = $_POST['full_name'] ?? '';
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
-            if ($crud->addClient($full_name, $email, $password)) {
-                echo '<script>alert("✅ Client added successfully.");</script>';
-            } else {
-                echo '<script>alert("❌ Failed to add client.");</script>';
-            }
+
+            $id = $crud->addClient($full_name, $email, $password);
+            $response = $id ? "✅ Client added successfully.||$id" : "❌ Failed to add client.";
             break;
 
         case 'add_vacation':
             $title = $_POST['title'] ?? '';
             $start = $_POST['start_date'] ?? '';
             $end = $_POST['end_date'] ?? '';
-            if ($crud->addVacation($title, $start, $end)) {
-                add_message();
+
+            $id = $crud->addVacation($title, $start, $end);
+            $response = $id ? "✅ Vacation added successfully.||$id" : "❌ Failed to add vacation.";
+            break;
+
+        case 'delete_client':
+           case 'delete_client':
+            $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+            if ($id && $crud->deleteClient($id)) {
+                echo "✅ Client deleted.||$id";
             } else {
-                add_message();
+                echo "❌ Failed to delete client. ID: $id";
             }
             break;
 
-        default:
-            echo "⚠️ Unknown action.";
-    }
-}
+        case 'delete_vacation':
+            $id = (int)($_POST['id'] ?? 0);
+            $response = $crud->deleteVacation($id)
+                ? "✅ Vacation deleted.||$id"
+                : "❌ Failed to delete vacation.";
+            break;
 
+        default:
+            $response = "⚠️ Unknown action.";
+    }
+
+    echo $response;
+}
 ?>
+
+
