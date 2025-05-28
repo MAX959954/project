@@ -164,4 +164,6 @@ function add_booking_successful_modal(){
     ';
 }
 
+
 ?>
+

@@ -12,18 +12,20 @@ class Database {
         $this->connect();
     }
 
-    private function connect() {
+   public function connect() {
         $this->conn = new mysqli($this->host, $this->username, $this->password, $this->dbname);
 
         if ($this->conn->connect_error) {
             die("❌ Database connection failed: " . $this->conn->connect_error);
         }
 
-        // Set charset
         if (!$this->conn->set_charset($this->charset)) {
             die("❌ Error loading character set {$this->charset}: " . $this->conn->error);
         }
-    }
+
+        return $this->conn; // ✅ return the connection
+   }
+
 
     public function getConnection() {
         return $this->conn;

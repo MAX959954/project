@@ -1,89 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUD Menu</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e9ecef;
-        }
-        .menu-container {
-            max-width: 700px;
-            margin: 60px auto;
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .menu-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .menu-header h1 {
-            margin: 0;
-            font-size: 28px;
-            color: #495057;
-        }
-        .menu-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-        }
-        .menu-buttons a {
-            text-decoration: none;
-            text-align: center;
-            background: #28a745;
-            color: #ffffff;
-            padding: 12px 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-        .menu-buttons a:hover {
-            background: #218838;
-            transform: translateY(-3px);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRUD Menu Cards</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function toggleForm() {
+      document.getElementById('newClientForm').classList.toggle('hidden');
+    }
+
+    function vacationForm() {
+      document.getElementById('newVacationForm').classList.toggle('hidden');
+    }
+
+    function addClientCard(name, email) {
+      const container = document.getElementById('cardContainer');
+      const card = document.createElement('div');
+      card.className = "bg-white p-5 rounded-xl shadow-md space-y-3";
+
+      card.innerHTML = `
+        <h2 class="text-xl font-semibold text-gray-700">${name}</h2>
+        <p class="text-sm text-gray-500">📧 ${email}</p>
+        <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
+        <div class="flex space-x-2 pt-3">
+          <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
+          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">🗑️ Delete</button>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    function addVacationCard(title, start, end) {
+      const container = document.getElementById('cardContainer');
+      const card = document.createElement('div');
+      card.className = "bg-white p-5 rounded-xl shadow-md space-y-3";
+
+      card.innerHTML = `
+        <h2 class="text-xl font-semibold text-gray-700">${title}</h2>
+        <p class="text-sm text-gray-500">📅 ${start} to ${end}</p>
+        <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
+        <div class="flex space-x-2 pt-3">
+          <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
+          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">🗑️ Delete</button>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const action = formData.get('action');
+
+          const response = await fetch('crud.php', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.text();
+          alert(result.replace(/<[^>]*>?/gm, ''));
+
+          if (result.includes("✅")) {
+            if (action === 'add_client') {
+              const name = form.querySelector('input[name="full_name"]').value;
+              const email = form.querySelector('input[name="email"]').value;
+              addClientCard(name, email);
+              toggleForm();
+              form.reset();
+            }
+
+            if (action === 'add_vacation') {
+              const title = form.querySelector('input[name="title"]').value;
+              const start = form.querySelector('input[name="start_date"]').value;
+              const end = form.querySelector('input[name="end_date"]').value;
+              addVacationCard(title, start, end);
+              vacationForm();
+              form.reset();
+            }
+          }
+        });
+      });
+    });
+  </script>
 </head>
-<body>
-    <div class="menu-container">
-        <div class="menu-header">
-            <h1>CRUD Operations</h1>
-        </div>
-        <div class="menu-buttons">
-            <a href="create.php">Create</a>
-            <a href="read.php">Read</a>
-            <a href="update.php">Update</a>
-            <a href="delete.php">Delete</a>
-        </div>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800">Client List</h1>
+      <div class="flex space-x-4">
+        <button onclick="vacationForm()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">+ New Vacation</button>
+        <button onclick="toggleForm()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">+ New Client</button>
+      </div>
     </div>
+
+    <!-- Cards Container -->
+    <div id="cardContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></div>
+
+    <!-- New Client Form -->
+    <div id="newClientForm" class="hidden bg-white p-6 rounded-xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">New Client</h2>
+      <form method="POST" action="crud.php">
+        <input type="hidden" name="action" value="add_client">
+        <div class="grid grid-cols-1 gap-4">
+          <label>
+            <span class="block text-sm font-medium text-gray-700">Name</span>
+            <input type="text" name="full_name" class="w-full p-2 mt-1 border rounded" required />
+          </label>
+          <label>
+            <span class="block text-sm font-medium text-gray-700">Email</span>
+            <input type="email" name="email" class="w-full p-2 mt-1 border rounded" required />
+          </label>
+          <label>
+            <span class="block text-sm font-medium text-gray-700">Password</span>
+            <input type="password" name="password" class="w-full p-2 mt-1 border rounded" required />
+          </label>
+        </div>
+        <div class="flex space-x-4 mt-6">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Submit</button>
+          <button type="button" onclick="toggleForm()" class="border px-4 py-2 rounded hover:bg-gray-100 transition">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- New Vacation Form -->
+    <div id="newVacationForm" class="hidden bg-white p-6 rounded-xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">New Vacation</h2>
+      <form method="POST" action="crud.php">
+        <input type="hidden" name="action" value="add_vacation">
+        <div class="grid grid-cols-1 gap-4">
+          <label>
+            <span class="block text-sm font-medium text-gray-700">Title</span>
+            <input type="text" name="title" class="w-full p-2 mt-1 border rounded" required />
+          </label>
+          <label>
+            <span class="block text-sm font-medium text-gray-700">Start date</span>
+            <input type="date" name="start_date" class="w-full p-2 mt-1 border rounded" required />
+          </label>
+          <label>
+            <span class="block text-sm font-medium text-gray-700">End date</span>
+            <input type="date" name="end_date" class="w-full p-2 mt-1 border rounded" required />
+          </label>
+        </div>
+        <div class="flex space-x-4 mt-6">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Submit</button>
+          <button type="button" onclick="vacationForm()" class="border px-4 py-2 rounded hover:bg-gray-100 transition">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
 
-<?php
-class Database {
-    private $host = "localhost";
-    private $db_name = "your_database_name";
-    private $username = "your_username";
-    private $password = "your_password";
-    private $conn;
 
-    public function connect() {
-        $this->conn = null;
-        try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            echo "Connection error: " . $e->getMessage();
-        }
-        return $this->conn;
-    }
-}
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once 'crud-operation.php';
+require_once 'functions.php';
 
 class CRUD {
     private $conn;
@@ -92,84 +170,53 @@ class CRUD {
         $this->conn = $db;
     }
 
-    public function create($data) {
-        $sql = "INSERT INTO your_table_name (column1, column2) VALUES (:value1, :value2)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':value1', $data['value1']);
-        $stmt->bindParam(':value2', $data['value2']);
-        if ($stmt->execute()) {
-            echo "Record created successfully.";
-        } else {
-            echo "Failed to create record.";
-        }
-    }
+   public function addClient($full_name, $email, $password) {
+      $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+      $sql = "INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)";
+      $stmt = $this->conn->prepare($sql);
+      return $stmt->execute([$full_name, $email, $hashedPassword]);
+  }
 
-    public function read() {
-        $sql = "SELECT * FROM your_table_name";
+    public function addVacation($title, $start_date, $end_date) {
+        $sql = "INSERT INTO vacation (title, start_date, end_date) VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function update($id, $data) {
-        $sql = "UPDATE your_table_name SET column1 = :value1, column2 = :value2 WHERE id = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':value1', $data['value1']);
-        $stmt->bindParam(':value2', $data['value2']);
-        $stmt->bindParam(':id', $id);
-        if ($stmt->execute()) {
-            echo "Record updated successfully.";
-        } else {
-            echo "Failed to update record.";
-        }
-    }
-
-    public function delete($id) {
-        $sql = "DELETE FROM your_table_name WHERE id = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        if ($stmt->execute()) {
-            echo "Record deleted successfully.";
-        } else {
-            echo "Failed to delete record.";
-        }
+        return $stmt->execute([$title, $start_date, $end_date]);
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $database = new Database();
-    $db = $database->connect();
-    $crud = new CRUD($db);
+   $database = new Database();
+   $db = $database->getConnection(); // ✅ use getConnection() instead of connect()
+   $crud = new CRUD($db);
 
-    if (isset($_POST['action'])) {
-        switch ($_POST['action']) {
-            case 'create':
-                $crud->create(['value1' => 'Sample1', 'value2' => 'Sample2']);
-                break;
-            case 'read':
-                $records = $crud->read();
-                print_r($records);
-                break;
-            case 'update':
-                $crud->update(1, ['value1' => 'Updated1', 'value2' => 'Updated2']);
-                break;
-            case 'delete':
-                $crud->delete(1);
-                break;
-        }
+    $action = $_POST['action'] ?? '';
+
+    switch ($action) {
+        case 'add_client':
+            $full_name = $_POST['full_name'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $password = $_POST['password'] ?? '';
+            if ($crud->addClient($full_name, $email, $password)) {
+                echo '<script>alert("✅ Client added successfully.");</script>';
+            } else {
+                echo '<script>alert("❌ Failed to add client.");</script>';
+            }
+            break;
+
+        case 'add_vacation':
+            $title = $_POST['title'] ?? '';
+            $start = $_POST['start_date'] ?? '';
+            $end = $_POST['end_date'] ?? '';
+            if ($crud->addVacation($title, $start, $end)) {
+                add_message();
+            } else {
+                add_message();
+            }
+            break;
+
+        default:
+            echo "⚠️ Unknown action.";
     }
 }
+
 ?>
-<form method="POST" style="display: none;">
-    <input type="hidden" name="action" id="action">
-</form>
-<script>
-    document.querySelectorAll('.menu-buttons a').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const action = this.textContent.toLowerCase();
-            document.getElementById('action').value = action;
-            document.querySelector('form').submit();
-        });
-    });
-</script>
