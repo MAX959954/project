@@ -168,17 +168,108 @@ function showEditForm(id, currentName, currentEmail) {
       card.setAttribute('data-type', 'vacation');
 
       card.innerHTML = `
-        <h2 class="text-xl font-semibold text-gray-700">${title}</h2>
-        <p class="text-sm text-gray-500">📅 ${start} to ${end}</p>
-        <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
-        <div class="flex space-x-2 pt-3">
-          <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
-          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition delete-btn">🗑️ Delete</button>
-        </div>
+          <h2 class="text-xl font-semibold text-gray-700">${title}</h2>
+          <p class="text-sm text-gray-500">📅 ${start} to ${end}</p>
+          <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
+          <div class="flex space-x-2 pt-3">
+              <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition edit-vacation-btn">✏️ Edit</button>
+              <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition delete-btn">🗑️ Delete</button>
+          </div>
       `;
       container.appendChild(card);
+
+      // Add edit handler
+      card.querySelector('.edit-vacation-btn').addEventListener('click', () => {
+          showEditVacationForm(id, title, start, end);
+      });
+
+      // Existing delete handler
       attachDeleteHandler(card);
     }
+
+
+    function showEditVacationForm(id, currentTitle, currentStart, currentEnd) {
+      // Hide any existing forms
+      document.getElementById('newClientForm').classList.add('hidden');
+      document.getElementById('newVacationForm').classList.add('hidden');
+
+      // Create or show edit form
+      let editForm = document.getElementById('editVacationForm');
+      if (!editForm) {
+          editForm = document.createElement('div');
+          editForm.id = 'editVacationForm';
+          editForm.className = 'bg-white p-6 rounded-xl shadow-md mb-6';
+          editForm.innerHTML = `
+              <h2 class="text-2xl font-semibold text-gray-800 mb-4">Edit Vacation</h2>
+              <form id="editVacationFormData" method="POST">
+                  <input type="hidden" name="action" value="edit_vacation">
+                  <input type="hidden" name="id" value="${id}">
+                  <div class="grid grid-cols-1 gap-4">
+                      <label>
+                          <span class="block text-sm font-medium text-gray-700">Title</span>
+                          <input type="text" name="title" class="w-full p-2 mt-1 border rounded" required />
+                      </label>
+                      <label>
+                          <span class="block text-sm font-medium text-gray-700">Start date</span>
+                          <input type="date" name="start_date" class="w-full p-2 mt-1 border rounded" required />
+                      </label>
+                      <label>
+                          <span class="block text-sm font-medium text-gray-700">End date</span>
+                          <input type="date" name="end_date" class="w-full p-2 mt-1 border rounded" required />
+                      </label>
+                  </div>
+                  <div class="flex space-x-4 mt-6">
+                      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Update</button>
+                      <button type="button" onclick="document.getElementById('editVacationForm').remove()" class="border px-4 py-2 rounded hover:bg-gray-100 transition">Cancel</button>
+                  </div>
+              </form>
+          `;
+          document.querySelector('.max-w-6xl').appendChild(editForm);
+          
+          // Add form submit handler
+          document.getElementById('editVacationFormData').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              
+              try {
+                  const response = await fetch('crud.php', {
+                      method: 'POST',
+                      body: formData
+                  });
+                  
+                  const result = await response.text();
+                  alert(result.replace(/<[^>]*>?/gm, ''));
+                  
+                  if (result.includes("✅")) {
+                      // Update the card directly without page reload
+                      const id = formData.get('id');
+                      const updatedTitle = formData.get('title');
+                      const updatedStart = formData.get('start_date');
+                      const updatedEnd = formData.get('end_date');
+                      
+                      // Find the card and update its content
+                      const card = document.querySelector(`[data-id="${id}"][data-type="vacation"]`);
+                      if (card) {
+                          card.querySelector('h2').textContent = updatedTitle;
+                          card.querySelector('p.text-gray-500').textContent = `📅 ${updatedStart} to ${updatedEnd}`;
+                      }
+                      
+                      // Remove the edit form
+                      document.getElementById('editVacationForm').remove();
+                  }
+              } catch (error) {
+                  alert("Error updating vacation: " + error.message);
+              }
+          });
+      }
+      
+      // Populate form with current values
+      editForm.querySelector('input[name="title"]').value = currentTitle;
+      editForm.querySelector('input[name="start_date"]').value = currentStart;
+      editForm.querySelector('input[name="end_date"]').value = currentEnd;
+      editForm.classList.remove('hidden');
+    }
+
 
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('form').forEach(form => {
@@ -314,7 +405,6 @@ class CRUD {
         return false;
     }
 
-    // Add Vacation
     public function addVacation($title, $start_date, $end_date) {
         $sql = "INSERT INTO vacation (title, start_date, end_date) VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
@@ -346,9 +436,19 @@ class CRUD {
 
     // Delete Vacation
     public function deleteVacation($id) {
+       if ($id <= 0) return false; // Reject invalid IDs
         $sql = "DELETE FROM vacation WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
-        if ($stmt && $stmt->bind_param("i", $id)) {
+        return $stmt && $stmt->bind_param("i", $id) && $stmt->execute();
+    }
+
+    public function editVacation($id, $title, $start_date, $end_date) {
+        if ($id <= 0) return false;
+        
+        $sql = "UPDATE vacation SET title = ?, start_date = ?, end_date = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        
+        if ($stmt && $stmt->bind_param("sssi", $title, $start_date, $end_date, $id)){
             return $stmt->execute();
         }
         return false;
@@ -379,7 +479,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $id = $crud->addClient($full_name, $email, $password);
         $response = $id ? "✅ Client added successfully. ID:$id" : "❌ Failed to add client.";
-        break; // Ensure this terminates the case properly
+        break; 
+
+        case 'add_vacation':
+          $title = $_POST['title'] ?? '';
+          $start_date = $_POST['start_date'] ?? '';
+          $end_date = $_POST['end_date'] ?? '';
+          
+          if (empty($title) || empty($start_date) || empty($end_date)) {
+              $response = "❌ All vacation fields are required.";
+              break;
+          }
+
+          $id = $crud->addVacation($title, $start_date,  $end_date);
+          $response = $id ? "✅ Client added successfully. ID:$id" : "❌ Failed to add client.";
+          break; 
+          break;
         
        case 'edit_client':
         $id = (int)($_POST['id'] ?? 0);
@@ -397,28 +512,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         break;
 
+      case 'edit_vacation':
+           $id = (int)($_POST['id'] ?? 0);
+            $title = $_POST['title'] ?? '';
+            $start_date = $_POST['start_date'] ?? '';
+            $end_date = $_POST['end_date'] ?? '';
+
+            if ($id > 0 && $title && $start_date && $end_date) {
+                if ($crud->editVacation($id, $title , $start_date , $end_date)) {
+                    $response = "✅ Client updated successfully. ID:$id";
+                } else {
+                    $response = "❌ Failed to update client. ID:$id";
+                }
+            } else {
+                $response = "❌ Invalid data for editing client.";
+            }
+          break;
+
       case 'delete_client':
           $id = (int)($_POST['id'] ?? 0);
           if ($crud->deleteClient($id)) {
               error_log("Deleted client ID: $id"); // Log success
               $response = "✅ Client deleted.||$id";
           } else {
-              error_log("Failed to delete client ID: $id. Error: " . $db->error); // Log failure
+              error_log("Failed to delete client ID: $id. Error: " . $db->error); 
               $response = "❌ Failed to delete client. ID: $id";
           }
           break;
 
-        case 'delete_vacation':
-            $id = (int)($_POST['id'] ?? 0);
-            $response = $crud->deleteVacation($id)
-                ? "✅ Vacation deleted.||$id"
-                : "❌ Failed to delete vacation.";
-            break;
-
+      case 'delete_vacation':
+          $id = (int)($_POST['id'] ?? 0);
+          if ($crud->deleteVacation($id)) {
+              error_log("Deleted vacation ID: $id"); // Log success
+              $response = "✅ Vacation deleted.||$id";
+          } else {
+              error_log("Failed to delete vacation ID: $id. Error: " . $db->error); 
+              $response = "❌ Failed to delete vacation. ID: $id";
+          }
+          break;
+          
         default:
             $response = "⚠️ Unknown action.";
     }
 
-    echo $response; // Ensure all responses are echoed here
+    echo $response; 
 }
 ?>
