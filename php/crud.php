@@ -38,45 +38,127 @@
       });
     }
 
-   function addClientCard(name, email, id) {
+function addClientCard(name, email, id) {
     const container = document.getElementById('cardContainer');
     const card = document.createElement('div');
     card.className = "bg-white p-5 rounded-xl shadow-md space-y-3";
-    card.dataset.id = id; // 🔑 Store the ID
+    card.dataset.id = id;
 
     card.innerHTML = `
-      <h2 class="text-xl font-semibold text-gray-700">${name}</h2>
-      <p class="text-sm text-gray-500">📧 ${email}</p>
-      <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
-      <div class="flex space-x-2 pt-3">
-        <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">✏️ Edit</button>
-        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition delete-btn">🗑️ Delete</button>
-      </div>
+        <h2 class="text-xl font-semibold text-gray-700">${name}</h2>
+        <p class="text-sm text-gray-500">📧 ${email}</p>
+        <p class="text-sm text-gray-400">🕒 Created: ${new Date().toLocaleString()}</p>
+        <div class="flex space-x-2 pt-3">
+            <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition edit-btn">✏️ Edit</button>
+            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition delete-btn">🗑️ Delete</button>
+        </div>
     `;
     container.appendChild(card);
 
-    // 🔥 Attach delete handler
-   card.querySelector('.delete-btn').addEventListener('click', async () => {
-    const confirmDelete = confirm("Are you sure you want to delete this client?");
-    if (!confirmDelete) return;
-
-    const res = await fetch('crud.php', {
-        method: 'POST',
-        body: new URLSearchParams({
-            action: 'delete_client',
-            id: id // Ensure this matches the card's data-id
-        })
+    // Add edit handler
+    card.querySelector('.edit-btn').addEventListener('click', () => {
+        showEditForm(id, name, email);
     });
 
-    const text = await res.text();
-    alert(text);
-    if (text.includes("✅")) { // Only remove if PHP confirms success
-        card.remove();
-    } else {
-        console.error("Deletion failed:", text);
+    // Existing delete handler
+    card.querySelector('.delete-btn').addEventListener('click', async () => {
+        const confirmDelete = confirm("Are you sure you want to delete this client?");
+        if (!confirmDelete) return;
+
+        const res = await fetch('crud.php', {
+            method: 'POST',
+            body: new URLSearchParams({
+                action: 'delete_client',
+                id: id
+            })
+        });
+
+        const text = await res.text();
+        alert(text);
+        if (text.includes("✅")) {
+            card.remove();
+        }
+    });
+}
+
+
+function showEditForm(id, currentName, currentEmail) {
+    // Hide any existing forms
+    document.getElementById('newClientForm').classList.add('hidden');
+    document.getElementById('newVacationForm').classList.add('hidden');
+
+    // Create or show edit form
+    let editForm = document.getElementById('editClientForm');
+    if (!editForm) {
+        editForm = document.createElement('div');
+        editForm.id = 'editClientForm';
+        editForm.className = 'bg-white p-6 rounded-xl shadow-md mb-6';
+        editForm.innerHTML = `
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Edit Client</h2>
+            <form id="editClientFormData" method="POST">
+                <input type="hidden" name="action" value="edit_client">
+                <input type="hidden" name="id" value="${id}">
+                <div class="grid grid-cols-1 gap-4">
+                    <label>
+                        <span class="block text-sm font-medium text-gray-700">Name</span>
+                        <input type="text" name="full_name" class="w-full p-2 mt-1 border rounded" required />
+                    </label>
+                    <label>
+                        <span class="block text-sm font-medium text-gray-700">Email</span>
+                        <input type="email" name="email" class="w-full p-2 mt-1 border rounded" required />
+                    </label>
+                </div>
+                <div class="flex space-x-4 mt-6">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Update</button>
+                    <button type="button" onclick="document.getElementById('editClientForm').remove()" class="border px-4 py-2 rounded hover:bg-gray-100 transition">Cancel</button>
+                </div>
+            </form>
+        `;
+        document.querySelector('.max-w-6xl').appendChild(editForm);
+        
+      // In your showEditForm function, update the form submit handler:
+    document.getElementById('editClientFormData').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+    
+      try {
+        const response = await fetch('crud.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.text();
+        alert(result.replace(/<[^>]*>?/gm, ''));
+        
+        if (result.includes("✅")) {
+            // Update the card directly without page reload
+            const id = formData.get('id');
+            const updatedName = formData.get('full_name');
+            const updatedEmail = formData.get('email');
+            
+            // Find the card and update its content
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.querySelector('h2').textContent = updatedName;
+                card.querySelector('p.text-gray-500').textContent = `📧 ${updatedEmail}`;
+            }
+            
+            // Remove the edit form
+            document.getElementById('editClientForm').remove();
+        }
+          } catch (error) {
+              alert("Error updating client: " + error.message);
+          }
+      });
     }
-});
-  }
+    
+    // Populate form with current values
+    editForm.querySelector('input[name="full_name"]').value = currentName;
+    editForm.querySelector('input[name="email"]').value = currentEmail;
+    editForm.classList.remove('hidden');
+}
+
+
 
     function addVacationCard(title, start, end, id) {
       const container = document.getElementById('cardContainer');
@@ -242,6 +324,18 @@ class CRUD {
         return false;
     }
 
+    public function editClient($id, $full_name, $email) {
+        if ($id <= 0) return false;
+        
+        $sql = "UPDATE users SET full_name = ?, email = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        
+        if ($stmt && $stmt->bind_param("ssi", $full_name, $email, $id)) {
+            return $stmt->execute();
+        }
+        return false;
+    }
+
     // Delete Client
    public function deleteClient($id) {
     if ($id <= 0) return false; // Reject invalid IDs
@@ -285,27 +379,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $id = $crud->addClient($full_name, $email, $password);
         $response = $id ? "✅ Client added successfully. ID:$id" : "❌ Failed to add client.";
+        break; // Ensure this terminates the case properly
+        
+       case 'edit_client':
+        $id = (int)($_POST['id'] ?? 0);
+        $full_name = $_POST['full_name'] ?? '';
+        $email = $_POST['email'] ?? '';
+
+        if ($id > 0 && $full_name && $email) {
+            if ($crud->editClient($id, $full_name, $email)) {
+                $response = "✅ Client updated successfully. ID:$id";
+            } else {
+                $response = "❌ Failed to update client. ID:$id";
+            }
+        } else {
+            $response = "❌ Invalid data for editing client.";
+        }
         break;
-        
-        case 'add_vacation':
-            $title = $_POST['title'] ?? '';
-            $start = $_POST['start_date'] ?? '';
-            $end = $_POST['end_date'] ?? '';
-        
-            $id = $crud->addVacation($title, $start, $end);
-            $response = $id ? "✅ Vacation added successfully. ID:$id" : "❌ Failed to add vacation.";
-            break;
 
       case 'delete_client':
           $id = (int)($_POST['id'] ?? 0);
           if ($crud->deleteClient($id)) {
               error_log("Deleted client ID: $id"); // Log success
-              echo "✅ Client deleted.||$id";
+              $response = "✅ Client deleted.||$id";
           } else {
               error_log("Failed to delete client ID: $id. Error: " . $db->error); // Log failure
-              echo "❌ Failed to delete client. ID: $id";
+              $response = "❌ Failed to delete client. ID: $id";
           }
-            break;
+          break;
 
         case 'delete_vacation':
             $id = (int)($_POST['id'] ?? 0);
@@ -318,8 +419,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response = "⚠️ Unknown action.";
     }
 
-    echo $response;
+    echo $response; // Ensure all responses are echoed here
 }
 ?>
-
-
