@@ -305,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               error_log("Failed to delete client ID: $id. Error: " . $db->error); // Log failure
               echo "❌ Failed to delete client. ID: $id";
           }
-          break;
+            break;
 
         case 'delete_vacation':
             $id = (int)($_POST['id'] ?? 0);
