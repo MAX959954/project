@@ -25,7 +25,8 @@
     </footer>
 
    <?php
-      add_scrips();
+      $pageManager = new PageManager();
+      $pageManager->add_scripts();
    ?>
 
 </body>

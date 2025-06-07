@@ -78,49 +78,98 @@ class UserRegistration {
   }
 }
 
-if (!isset($conn) || !$conn) {
-    die("Database connection error. Please check your configuration.");
-}
+class Application {
+  private $conn;
+  private $userRegistration;
+  private $pageManager;
+  private $errors = [];
+  private $showRegistrationSuccess = false;
 
-$userRegistration = new UserRegistration($conn);
+  public function __construct($dbConnection) {
+    $this->conn = $dbConnection;
+    $this->initializeComponents();
+  }
 
-$errors = [];
+  private function initializeComponents() {
+    if (!isset($this->conn) || !$this->conn) {
+      die("Database connection error. Please check your configuration.");
+    }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sign_up'])) {
+    $this->userRegistration = new UserRegistration($this->conn);
+    $this->pageManager = new PageManager();
+  }
+
+  public function handleRequest() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sign_up'])) {
+      $this->processRegistration();
+    }
+
+    $this->loadSessionErrors();
+    $this->checkRegistrationSuccess();
+    $this->checkLoginSuccess();
+    $this->renderPageComponents();
+  }
+
+  private function processRegistration() {
     $name = trim($_POST["name"]);
     $password = trim($_POST["password"]);
     $email = trim($_POST["email"]);
-    $errors = $userRegistration->registerUser($name, $password, $email);
+    $this->errors = $this->userRegistration->registerUser($name, $password, $email);
 
-    if (empty($errors)) {
-        $_SESSION['registration_success'] = true;
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit();
+    if (empty($this->errors)) {
+      $_SESSION['registration_success'] = true;
+      header("Location: " . $_SERVER['PHP_SELF']);
+      exit();
     }
-}
+  }
 
-if (isset($_SESSION['errors'])) {
-    $errors = array_merge($errors, $_SESSION['errors']);
-    unset($_SESSION['errors']);
-}
+  private function loadSessionErrors() {
+    if (isset($_SESSION['errors'])) {
+      $this->errors = array_merge($this->errors, $_SESSION['errors']);
+      unset($_SESSION['errors']);
+    }
+  }
 
-$showRegistrationSuccess = false;
-if (isset($_SESSION['registration_success']) && $_SESSION['registration_success']) {
-    $showRegistrationSuccess = true;
-    unset($_SESSION['registration_success']);
-}
+  private function checkRegistrationSuccess() {
+    if (isset($_SESSION['registration_success']) && $_SESSION['registration_success']) {
+      $this->showRegistrationSuccess = true;
+      unset($_SESSION['registration_success']);
+    }
+  }
 
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "<script>
+  private function checkLoginSuccess() {
+    if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+      echo "<script>
         document.addEventListener('DOMContentLoaded', function () {
-            var loginSuccessModal = new bootstrap.Modal(document.getElementById('loginSuccessModal'));
-            loginSuccessModal.show();
+          var loginSuccessModal = new bootstrap.Modal(document.getElementById('loginSuccessModal'));
+          loginSuccessModal.show();
         });
-    </script>";
-    unset($_SESSION['login_success']);
+      </script>";
+      unset($_SESSION['login_success']);
+    }
+  }
+
+  private function renderPageComponents() {
+    $this->pageManager->add_navbar();
+    $this->pageManager->add_book_window();
+    $this->pageManager->add_booking_successful_modal();
+  }
+
+  public function getErrors() {
+    return $this->errors;
+  }
+
+  public function isRegistrationSuccessful() {
+    return $this->showRegistrationSuccess;
+  }
 }
 
-add_navbar();
+$app = new Application($conn);
+$app->handleRequest();
+
+$errors = $app->getErrors();
+$showRegistrationSuccess = $app->isRegistrationSuccessful();
+
 ?>
 
 <body>
@@ -296,31 +345,50 @@ add_navbar();
     </div>
 
     <?php
+    class BookingManager {
+      private $pageManager;
 
-    if (isset($_SESSION['booking_success']) && $_SESSION['booking_success']) {
-        echo "<script>
+      public function __construct($pageManager) {
+        $this->pageManager = $pageManager;
+      }
+
+      public function handleBookingSession() {
+        $this->showBookingSuccessModal();
+        $this->showBookingErrorAlert();
+        $this->renderBookingComponents();
+      }
+
+      private function showBookingSuccessModal() {
+        if (isset($_SESSION['booking_success']) && $_SESSION['booking_success']) {
+          echo "<script>
             document.addEventListener('DOMContentLoaded', function () {
-                var bookingSuccessModal = new bootstrap.Modal(document.getElementById('bookingSuccessModal'));
-                bookingSuccessModal.show();
+              var bookingSuccessModal = new bootstrap.Modal(document.getElementById('bookingSuccessModal'));
+              bookingSuccessModal.show();
             });
-        </script>";
-        unset($_SESSION['booking_success']);
+          </script>";
+          unset($_SESSION['booking_success']);
+        }
+      }
+
+      private function showBookingErrorAlert() {
+        if (isset($_SESSION['booking_error'])) {
+          echo "<script>
+            document.addEventListener('DOMContentLoaded', function () {
+              alert('" . addslashes($_SESSION['booking_error']) . "');
+            });
+          </script>";
+          unset($_SESSION['booking_error']);
+        }
+      }
+
+      private function renderBookingComponents() {
+        $this->pageManager->add_book_window();
+        $this->pageManager->add_booking_successful_modal();
+      }
     }
 
-    if (isset($_SESSION['booking_error'])) {
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function () {
-                alert('" . addslashes($_SESSION['booking_error']) . "');
-            });
-        </script>";
-        unset($_SESSION['booking_error']);
-    }
-    
-    add_book_window() ;
-    
-    add_booking_successful_modal();
-
-    $_SESSION['booking_success'] = true;
+    $bookingManager = new BookingManager($pageManager);
+    $bookingManager->handleBookingSession();
     ?>
 
     <div class="tabs-content" id="our-story">
